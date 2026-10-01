@@ -1,0 +1,155 @@
+// Tampilan data tempat tidur (read-only)
+const REFRESH_MS = 30000; // auto refresh tiap 30 detik
+
+const cardView = document.getElementById('cardView');
+const tableView = document.getElementById('tableView');
+const tbody = document.getElementById('tbody');
+const searchInput = document.getElementById('search');
+const filterKelas = document.getElementById('filterKelas');
+const alertBox = document.getElementById('alertBox');
+let rows = [];
+
+// Escape teks agar aman dari XSS
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+}[c]));
+
+// Status warna berdasarkan persentase keterisian
+function status(pct) {
+    if (pct >= 80) return { cls: 'danger', hex: '#ef4444', text: 'Penuh / Kritis' };
+    if (pct >= 50) return { cls: 'warning', hex: '#f59e0b', text: 'Hampir Penuh' };
+    return { cls: 'success', hex: '#10b981', text: 'Tersedia' };
+}
+
+function calc(r) {
+    const total = r.terisi + r.kosong;
+    const pct = total ? Math.round((r.terisi / total) * 100) : 0;
+    return { total, pct, st: status(pct) };
+}
+
+function renderSummary() {
+    const t = rows.reduce((a, r) => a + r.terisi, 0);
+    const k = rows.reduce((a, r) => a + r.kosong, 0);
+    document.getElementById('sumTerisi').textContent = t;
+    document.getElementById('sumKosong').textContent = k;
+    document.getElementById('sumTotal').textContent = t + k;
+    document.getElementById('sumBor').textContent = (t + k ? Math.round((t / (t + k)) * 100) : 0) + '%';
+}
+
+function renderFilter() {
+    const current = filterKelas.value;
+    const kelas = [...new Set(rows.map(r => r.kelas))].sort();
+    filterKelas.innerHTML = '<option value="">Semua Kelas</option>' +
+        kelas.map(k => `<option value="${esc(k)}">Kelas ${esc(k)}</option>`).join('');
+    filterKelas.value = kelas.includes(current) ? current : '';
+}
+
+function filtered() {
+    const q = searchInput.value.trim().toLowerCase();
+    const k = filterKelas.value;
+    return rows.filter(r => r.nama_ruang.toLowerCase().includes(q) && (!k || r.kelas === k));
+}
+
+function renderCards(list) {
+    if (!list.length) {
+        cardView.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="bi bi-inbox fs-1"></i><div>Data tidak ditemukan</div></div>';
+        return;
+    }
+    cardView.innerHTML = list.map((r, i) => {
+        const { total, pct, st } = calc(r);
+        return `<div class="col-sm-6 col-lg-4 col-xl-3 fade-up" style="animation-delay:${i * 60}ms">
+            <div class="card room-card h-100">
+                <div class="top-bar bg-${st.cls}"></div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <div class="room-name">${esc(r.nama_ruang)}</div>
+                            <span class="badge rounded-pill text-bg-light border">Kelas ${esc(r.kelas)}</span>
+                        </div>
+                        <span class="badge rounded-pill bg-${st.cls}-subtle text-${st.cls}-emphasis">${st.text}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="donut" style="--p:${pct};--c:${st.hex}" data-label="${pct}%"
+                             role="img" aria-label="Keterisian ${pct} persen"></div>
+                        <div class="flex-grow-1 d-grid gap-2">
+                            <div class="mini-stat"><div class="num text-danger">${r.terisi}</div><div class="lbl">Terisi</div></div>
+                            <div class="mini-stat"><div class="num text-success">${r.kosong}</div><div class="lbl">Kosong</div></div>
+                        </div>
+                    </div>
+                    <div class="text-center small text-muted mt-3"><i class="bi bi-grid-3x3-gap"></i> Total ${total} tempat tidur</div>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function renderTable(list) {
+    if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Data tidak ditemukan</td></tr>';
+        return;
+    }
+    tbody.innerHTML = list.map((r, i) => {
+        const { total, pct, st } = calc(r);
+        return `<tr>
+            <td class="text-center">${i + 1}</td>
+            <td class="fw-semibold text-capitalize">${esc(r.nama_ruang)}</td>
+            <td class="text-center"><span class="badge rounded-pill text-bg-light border">${esc(r.kelas)}</span></td>
+            <td class="text-center fw-bold text-danger">${r.terisi}</td>
+            <td class="text-center fw-bold text-success">${r.kosong}</td>
+            <td class="text-center">${total}</td>
+            <td>
+                <div class="progress" role="progressbar" aria-label="Keterisian ${esc(r.nama_ruang)}"
+                     aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar bg-${st.cls}" style="width:${pct}%">${pct}%</div>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function render() {
+    const list = filtered();
+    renderCards(list);
+    renderTable(list);
+}
+
+async function load() {
+    try {
+        const res = await fetch('api.php');
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Gagal memuat data.');
+        rows = json.data;
+        alertBox.innerHTML = '';
+        document.getElementById('lastUpdate').textContent = json.updated.slice(11);
+        renderSummary();
+        renderFilter();
+        render();
+    } catch (e) {
+        alertBox.innerHTML = `<div class="alert alert-danger"><i class="bi bi-exclamation-triangle"></i> ${esc(e.message)}</div>`;
+        if (!rows.length) cardView.innerHTML = '';
+    }
+}
+
+// Jam digital
+function tick() {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.toLocaleTimeString('id-ID');
+    document.getElementById('date').textContent = now.toLocaleDateString('id-ID',
+        { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+// Ganti mode tampilan kartu / tabel
+document.querySelectorAll('[data-view]').forEach(btn => btn.addEventListener('click', () => {
+    const view = btn.dataset.view;
+    document.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('active', b === btn));
+    cardView.classList.toggle('d-none', view !== 'card');
+    tableView.classList.toggle('d-none', view !== 'table');
+}));
+
+searchInput.addEventListener('input', render);
+filterKelas.addEventListener('change', render);
+
+tick();
+setInterval(tick, 1000);
+load();
+setInterval(load, REFRESH_MS);

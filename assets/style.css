@@ -1,0 +1,119 @@
+body {
+    font-family: 'Poppins', system-ui, sans-serif;
+    background: #f1f5f9;
+}
+
+/* Header gradien */
+.hero {
+    background: linear-gradient(135deg, #0f766e 0%, #059669 50%, #10b981 100%);
+    border-radius: 0 0 2rem 2rem;
+    box-shadow: 0 10px 30px rgba(5, 150, 105, .25);
+}
+.hero-icon {
+    width: 56px; height: 56px;
+    display: grid; place-items: center;
+    font-size: 1.75rem;
+    background: rgba(255, 255, 255, .2);
+    border-radius: 1rem;
+    backdrop-filter: blur(4px);
+}
+
+/* Header dashboard SATUSEHAT (biru) */
+.hero-satusehat {
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #0ea5e9 100%);
+    box-shadow: 0 10px 30px rgba(37, 99, 235, .25);
+}
+
+/* Kartu ringkasan */
+.stat-card {
+    display: flex; align-items: center; gap: .9rem;
+    background: #fff; color: #1e293b;
+    padding: 1rem 1.1rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, .08);
+    height: 100%;
+}
+.stat-icon {
+    width: 48px; height: 48px; flex-shrink: 0;
+    display: grid; place-items: center;
+    font-size: 1.4rem; border-radius: .8rem;
+}
+.stat-label { font-size: .8rem; color: #64748b; }
+.stat-value { font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
+
+.search-box { max-width: 280px; }
+
+/* Kartu ruangan / resource */
+.room-card {
+    border: 0;
+    border-radius: 1.1rem;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, .06);
+    transition: transform .2s, box-shadow .2s;
+    overflow: hidden;
+}
+.room-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(15, 23, 42, .12); }
+.room-card .top-bar { height: 6px; }
+.room-name { font-weight: 600; font-size: 1.15rem; text-transform: capitalize; }
+
+/* Donut chart dengan conic-gradient */
+.donut {
+    --p: 0; --c: #10b981;
+    width: 96px; height: 96px; border-radius: 50%;
+    background: conic-gradient(var(--c) calc(var(--p) * 1%), #e2e8f0 0);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+}
+.donut::before {
+    content: attr(data-label);
+    width: 74px; height: 74px; border-radius: 50%;
+    background: #fff;
+    display: grid; place-items: center;
+    font-weight: 700; font-size: 1.1rem; color: #1e293b;
+}
+
+.mini-stat { background: #f8fafc; border-radius: .7rem; padding: .5rem; text-align: center; }
+.mini-stat .num { font-size: 1.3rem; font-weight: 700; }
+.mini-stat .lbl { font-size: .72rem; color: #64748b; }
+
+/* Tabel */
+#tableView { border-radius: 1rem; overflow: hidden; }
+#tableView thead th {
+    background: #0f766e; color: #fff;
+    font-weight: 500; border: 0; padding: .9rem;
+}
+.hero-satusehat ~ main #tableView thead th { background: #1e40af; }
+.progress { height: 1.1rem; border-radius: 1rem; }
+
+.legend { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: middle; }
+
+/* Jadwal dokter */
+.section-head { border-left: 5px solid #059669; padding-left: .8rem; }
+.doctor-card {
+    border: 0; border-radius: 1rem;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, .06);
+    transition: transform .2s, box-shadow .2s;
+}
+.doctor-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(15, 23, 42, .1); }
+.doctor-card.is-libur { opacity: .6; filter: grayscale(.6); }
+.doctor-avatar {
+    width: 52px; height: 52px; flex-shrink: 0;
+    display: grid; place-items: center; font-size: 1.5rem;
+    border-radius: 50%; color: #fff;
+    background: linear-gradient(135deg, #0f766e, #10b981);
+}
+.doctor-name { font-weight: 600; }
+.min-w-0 { min-width: 0; }
+.jam-badge {
+    display: inline-block; padding: .25rem .7rem;
+    background: #ecfdf5; color: #047857;
+    border-radius: 2rem; font-weight: 600; font-size: .9rem;
+}
+.quota { background: #f1f5f9; border-radius: .5rem; padding: .15rem .5rem; color: #475569; }
+
+/* Animasi muncul */
+.fade-up { animation: fadeUp .4s ease both; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .fade-up, .room-card, .doctor-card { animation: none; transition: none; }
+}
