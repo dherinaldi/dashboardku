@@ -1,0 +1,16 @@
+# Kredensial — JANGAN commit ke repository
+config.php
+
+# Log error PHP
+*.log
+php-error.log
+
+# Backup file
+assets/backup/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+*.swp
+*.swo

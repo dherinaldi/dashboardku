@@ -47,6 +47,10 @@ Dashboard read-only berbasis **PHP + jQuery + MySQL** (Bootstrap 5) untuk monito
 
 ### Umum
 - Jam digital real-time di header
+- Navigasi antar dashboard via tombol di header
+- Responsive (mobile-friendly, Bootstrap 5 grid)
+- **Semua asset lokal** — tidak bergantung CDN, bisa jalan tanpa internet
+- XSS-safe — semua output teks di-escape di sisi JavaScript
 
 ---
 
@@ -54,7 +58,9 @@ Dashboard read-only berbasis **PHP + jQuery + MySQL** (Bootstrap 5) untuk monito
 
 ```
 dashboardku/
-├── config.php                  # Konfigurasi koneksi database (mysqli)
+├── .gitignore                  # Exclude config.php & log dari Git
+├── config.php                  # Konfigurasi koneksi database ⛔ TIDAK di-commit
+├── config.example.php          # Template config (TANPA password, aman di-commit)
 ├── api.php                     # API JSON — data tempat tidur
 ├── api_jadwal.php              # API JSON — jadwal dokter HFIS hari ini
 ├── api_satusehat.php           # API JSON — data pengiriman SATUSEHAT
@@ -120,7 +126,13 @@ dashboardku/
 
 2. **Start Laragon** — pastikan Apache dan MySQL aktif.
 
-3. **Sesuaikan konfigurasi** di `config.php` (lihat bagian berikutnya).
+3. **Buat file konfigurasi** dari template:
+   ```
+   copy config.example.php config.php
+   ```
+   Lalu edit `config.php` — isi IP, username, dan password database yang benar.
+
+   > ⛔ **`config.php` tidak di-commit ke Git** (sudah ada di `.gitignore`). Kredensial aman.
 
 4. **Akses via browser:**
    ```
@@ -240,4 +252,161 @@ api_satusehat.php?awal=2026-10-01&akhir=2026-10-01
   ]
 }
 ```
+
+
+---
+
+## Skema Database
+
+### Tabel `informasi.tempat_tidur_kemkes`
+
+| Kolom | Keterangan |
+|---|---|
+| `KAMAR` | Nama ruang rawat inap |
+| `KELAS` | Kelas kamar (1, 2, 3, VIP, dll.) |
+| `JMLLAKI` | Jumlah (perlu konfirmasi kolom terisi vs kosong) |
+
+### Tabel `regonline.jadwal_dokter_hfis`
+
+| Kolom | Tipe | Keterangan |
+|---|---|---|
+| `KD_DOKTER` | VARCHAR | Kode dokter |
+| `NM_DOKTER` | VARCHAR | Nama dokter |
+| `KD_POLI` | VARCHAR | Kode poli |
+| `KD_SUB_SPESIALIS` | VARCHAR | Sub-spesialis |
+| `HARI` | INT | 1=Senin … 7=Minggu |
+| `STATUS` | INT | 1=Aktif |
+| `JAM` | VARCHAR | Label jam (Pagi/Siang) |
+| `JAM_MULAI` | TIME | Jam mulai praktik |
+| `JAM_SELESAI` | TIME | Jam selesai praktik |
+| `KAPASITAS` | INT | Total kapasitas pasien |
+| `KOUTA_JKN` | INT | Kuota pasien JKN |
+| `KOUTA_NON_JKN` | INT | Kuota pasien Non-JKN |
+| `LIBUR` | INT | 1=Libur, 0=Aktif |
+
+### Stored Procedure `kemkes-ihs`.`dashboardPengiriman_modif`
+
+```sql
+CALL `kemkes-ihs`.dashboardPengiriman_modif(@awal, @akhir);
+-- Result set: NAMA, MEMILIKI_ID, TDK_MEMILIKI_ID, TOTAL
+```
+
+
+---
+
+## Vendor / Library
+
+Semua library tersimpan lokal di `assets/vendor/` — **tidak ada CDN dependency**, bisa jalan offline.
+
+| Library | Versi | Folder | Sumber Asli |
+|---|---|---|---|
+| Bootstrap CSS + JS | 5.3.3 | `vendor/bootstrap/` | [getbootstrap.com](https://getbootstrap.com) |
+| Bootstrap Icons | 1.11.3 | `vendor/bootstrap-icons/` | [icons.getbootstrap.com](https://icons.getbootstrap.com) |
+| jQuery | 3.7.1 | `vendor/jquery/` | [jquery.com](https://jquery.com) |
+| Poppins Font | v22 | `vendor/poppins/` | [Google Fonts](https://fonts.google.com/specimen/Poppins) |
+
+### Upgrade Vendor
+
+Download versi baru dan timpa file yang sesuai:
+
+```powershell
+# Contoh: upgrade Bootstrap
+Invoke-WebRequest -Uri 'https://cdn.jsdelivr.net/npm/bootstrap@5.x.x/dist/css/bootstrap.min.css' `
+    -OutFile 'assets/vendor/bootstrap/bootstrap.min.css'
+Invoke-WebRequest -Uri 'https://cdn.jsdelivr.net/npm/bootstrap@5.x.x/dist/js/bootstrap.bundle.min.js' `
+    -OutFile 'assets/vendor/bootstrap/bootstrap.bundle.min.js'
+```
+
+---
+
+## Catatan Teknis
+
+### Urutan Load Script
+
+```html
+<!-- jQuery HARUS dimuat pertama (dependency app.js / jadwal.js / satusehat.js) -->
+<script src="assets/vendor/jquery/jquery-3.7.1.min.js"></script>
+<script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="assets/app.js"></script>
+```
+
+### Auto-Refresh
+
+| Halaman | Data | Interval |
+|---|---|---|
+| `index.php` | Tempat tidur | 30 detik |
+| `index.php` | Jadwal dokter | 5 menit |
+| `index.php` | Status praktik dokter | 1 menit |
+| `satusehat.php` | Data pengiriman | 1 menit |
+
+### Keamanan
+
+- Semua API **read-only** (tidak ada operasi write)
+- `api.php` tolak method selain GET (HTTP 405)
+- `api_satusehat.php` pakai **prepared statement**
+- Output di-escape terhadap XSS di client (fungsi `esc()`)
+- `config.php` di-`.gitignore` — kredensial tidak ikut ke repository
+
+---
+
+## Troubleshooting
+
+### ⚠️ Bug: Kolom terisi/kosong sama (`api.php` baris 38-39)
+
+Kedua field membaca kolom `JMLLAKI` (copy-paste error):
+
+```php
+'terisi' => (int) $r['JMLLAKI'],   // baris 38
+'kosong' => (int) $r['JMLLAKI'],   // baris 39 — SALAH, harusnya kolom lain
+```
+
+**Solusi:** Cek nama kolom yang benar:
+
+```sql
+SHOW COLUMNS FROM informasi.tempat_tidur_kemkes;
+```
+
+Lalu perbaiki mapping di `api.php`.
+
+### Error: "Gagal terhubung ke database"
+
+1. Pastikan MySQL di `192.168.100.170` bisa diakses dari web server
+2. Cek kredensial di `config.php`
+3. Pastikan ekstensi `mysqli` aktif: `php -m | findstr mysqli`
+
+### Error: "Query jadwal dokter gagal"
+
+User belum punya akses `SELECT` ke database `regonline`:
+
+```sql
+GRANT SELECT ON regonline.jadwal_dokter_hfis TO 'admin'@'%';
+FLUSH PRIVILEGES;
+```
+
+### Error: "Stored procedure tidak dapat dipanggil"
+
+User belum punya hak `EXECUTE`:
+
+```sql
+GRANT EXECUTE ON PROCEDURE `kemkes-ihs`.dashboardPengiriman_modif TO 'admin'@'%';
+FLUSH PRIVILEGES;
+```
+
+### Font atau ikon tidak muncul
+
+Pastikan folder `assets/vendor/` lengkap, terutama:
+- `bootstrap-icons/fonts/bootstrap-icons.woff2`
+- `poppins/*.woff2`
+
+### Halaman kosong / spinner terus berputar
+
+1. Buka **DevTools** (F12) → tab **Console** — cek error JavaScript
+2. Tab **Network** — cek response `api.php` / `api_jadwal.php` (status 500?)
+3. Cek log error PHP di Laragon atau `php_error.log`
+
+---
+
+## Lisensi
+
+Internal — untuk keperluan operasional rumah sakit.
 
