@@ -26,6 +26,9 @@
                 <a href="satusehat.php" class="btn btn-outline-light btn-sm d-flex align-items-center gap-1">
                     <i class="bi bi-cloud-arrow-up"></i> Dashboard SATUSEHAT
                 </a>
+                <a href="antrian.php" class="btn btn-outline-light btn-sm d-flex align-items-center gap-1">
+                    <i class="bi bi-people-fill"></i> Antrian BPJS
+                </a>
                 <div class="text-end">
                     <div class="fs-4 fw-semibold" id="clock">--:--:--</div>
                     <div class="small opacity-75" id="date">-</div>

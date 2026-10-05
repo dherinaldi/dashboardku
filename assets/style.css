@@ -24,6 +24,12 @@ body {
     box-shadow: 0 10px 30px rgba(37, 99, 235, .25);
 }
 
+/* Header dashboard Antrian (ungu) */
+.hero-antrian {
+    background: linear-gradient(135deg, #581c87 0%, #7c3aed 50%, #a855f7 100%);
+    box-shadow: 0 10px 30px rgba(124, 58, 237, .25);
+}
+
 /* Kartu ringkasan */
 .stat-card {
     display: flex; align-items: center; gap: .9rem;
@@ -113,6 +119,15 @@ body {
 /* Animasi muncul */
 .fade-up { animation: fadeUp .4s ease both; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+/* Dashboard Antrian BPJS */
+.section-head-antrian { border-left-color: #7c3aed; }
+.antrian-table { border-radius: 1rem; overflow: hidden; }
+.antrian-table thead th {
+    background: #6d28d9; color: #fff;
+    font-weight: 500; border: 0;
+    white-space: nowrap; vertical-align: middle;
+}
 
 @media (prefers-reduced-motion: reduce) {
     .fade-up, .room-card, .doctor-card { animation: none; transition: none; }
