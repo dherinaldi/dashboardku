@@ -116,6 +116,47 @@ $(function () {
         load();
     });
 
+    // Sinkronisasi: hit webservice getAntreanPerTanggal per tanggal lewat proxy PHP
+    const $syncBox = $('#syncBox');
+    const $btnSync = $('#btnSync');
+    $btnSync.on('click', function () {
+        const a = $awal.val(), b = $akhir.val();
+        if (!a || !b) return;
+        if (!confirm(`Sinkronisasi data antrean dari ${a} s/d ${b}?\nProses ini menarik data per tanggal dari webservice dan bisa memakan waktu.`)) return;
+
+        const $btn = $(this);
+        const oldHtml = $btn.html();
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Menyinkronkan...');
+        $syncBox.html('<div class="alert alert-info"><i class="bi bi-hourglass-split"></i> Menarik data dari webservice, mohon tunggu...</div>');
+
+        $.ajax({
+            url: 'api_antrian_sync.php', method: 'GET', dataType: 'json', cache: false,
+            data: { awal: a, akhir: b }, timeout: 300000
+        })
+            .done(res => {
+                const cls = res.gagal ? 'warning' : 'success';
+                let rows = $.map(res.detail || [], d =>
+                    `<tr><td>${esc(d.tanggal)}</td>
+                     <td class="text-center">${d.ok ? '<span class="badge bg-success">OK</span>' : '<span class="badge bg-danger">GAGAL</span>'}</td>
+                     <td class="text-center">${esc(d.code)}</td>
+                     <td class="small text-muted">${esc(d.pesan)}</td></tr>`).join('');
+                $syncBox.html(
+                    `<div class="alert alert-${cls}">
+                        <i class="bi bi-check2-circle"></i> Sinkronisasi selesai:
+                        <b>${res.sukses}</b> sukses, <b>${res.gagal}</b> gagal dari <b>${res.total}</b> tanggal.
+                        <div class="table-responsive mt-2"><table class="table table-sm mb-0 bg-white">
+                        <thead><tr><th>Tanggal</th><th class="text-center">Status</th><th class="text-center">HTTP</th><th>Pesan</th></tr></thead>
+                        <tbody>${rows}</tbody></table></div>
+                     </div>`);
+                load(); // refresh tabel rekap
+            })
+            .fail(xhr => {
+                const msg = (xhr.responseJSON && xhr.responseJSON.error) || (xhr.statusText === 'timeout' ? 'Timeout — rentang terlalu panjang.' : 'Sinkronisasi gagal.');
+                $syncBox.html(`<div class="alert alert-danger"><i class="bi bi-exclamation-triangle"></i> ${esc(msg)}</div>`);
+            })
+            .always(() => $btn.prop('disabled', false).html(oldHtml));
+    });
+
     // Default: awal bulan ini s/d hari ini
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);

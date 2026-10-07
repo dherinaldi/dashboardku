@@ -78,6 +78,7 @@
                 <input type="date" id="tglAkhir" class="form-control" required>
             </div>
             <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Tampilkan</button>
+            <button type="button" id="btnSync" class="btn btn-warning"><i class="bi bi-cloud-download"></i> Sinkronisasi</button>
             <div class="btn-group" role="group" aria-label="Rentang cepat">
                 <button type="button" class="btn btn-outline-secondary" data-range="0">Hari Ini</button>
                 <button type="button" class="btn btn-outline-secondary" data-range="6">7 Hari</button>
@@ -95,6 +96,7 @@
     </div>
 
     <div id="alertBox" role="alert" aria-live="polite"></div>
+    <div id="syncBox" aria-live="polite"></div>
 
     <!-- Rekap Bulanan -->
     <section class="mb-4" aria-labelledby="bulananTitle">
@@ -178,6 +180,6 @@
 
 <script src="assets/vendor/jquery/jquery-3.7.1.min.js"></script>
 <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
-<script src="assets/antrian.js"></script>
+<script src="assets/antrian.js?v=<?= filemtime(__DIR__ . '/assets/antrian.js') ?>"></script>
 </body>
 </html>

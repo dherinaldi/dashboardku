@@ -8,9 +8,15 @@ php-error.log
 # Backup file
 assets/backup/
 
+# Folder bahan / referensi (tidak dipakai runtime)
+bahan/
+
 # OS / IDE
 .DS_Store
 Thumbs.db
 .vscode/
 *.swp
 *.swo
+
+#skip bahan
+bahan/
