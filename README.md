@@ -208,7 +208,15 @@ Semua API bersifat **read-only** (GET), mengembalikan JSON, tanpa autentikasi.
 }
 ```
 
-> **⚠️ Known Bug:** Kolom `terisi` dan `kosong` keduanya membaca `JMLLAKI` (copy-paste error baris 38-39). Lihat [Troubleshooting](#troubleshooting).
+**Perhitungan:**
+
+| Field JSON | Rumus | Kolom sumber |
+|---|---|---|
+| `terisi` | `JMLLAKI + JMLPEREMPUAN` | jumlah pasien L + P |
+| `kosong` | `max(0, total − terisi)` | sisa tempat tidur |
+| `total` *(dihitung di JS)* | `TTLAKI + TTPEREMPUAN` | kapasitas L + P |
+
+> `TTLAKI`/`TTPEREMPUAN` = kapasitas tempat tidur; `JMLLAKI`/`JMLPEREMPUAN` = jumlah terisi. `kosong` dibatasi `max(0, …)` agar tidak minus bila data terisi melebihi kapasitas.
 
 ### `GET api_jadwal.php` — Jadwal Dokter Hari Ini
 
@@ -264,7 +272,14 @@ api_satusehat.php?awal=2026-10-01&akhir=2026-10-01
 |---|---|
 | `KAMAR` | Nama ruang rawat inap |
 | `KELAS` | Kelas kamar (1, 2, 3, VIP, dll.) |
-| `JMLLAKI` | Jumlah (perlu konfirmasi kolom terisi vs kosong) |
+| `JENISKAMAR` | Jenis kamar |
+| `TTLAKI` | Kapasitas tempat tidur laki-laki |
+| `TTPEREMPUAN` | Kapasitas tempat tidur perempuan |
+| `JMLLAKI` | Jumlah pasien laki-laki (terisi) |
+| `JMLPEREMPUAN` | Jumlah pasien perempuan (terisi) |
+| `LASTUPDATED` | Waktu pembaruan data terakhir |
+
+> **Terisi** = `JMLLAKI + JMLPEREMPUAN` &middot; **Total** = `TTLAKI + TTPEREMPUAN` &middot; **Kosong** = `Total − Terisi`.
 
 ### Tabel `regonline.jadwal_dokter_hfis`
 
@@ -350,23 +365,6 @@ Invoke-WebRequest -Uri 'https://cdn.jsdelivr.net/npm/bootstrap@5.x.x/dist/js/boo
 ---
 
 ## Troubleshooting
-
-### ⚠️ Bug: Kolom terisi/kosong sama (`api.php` baris 38-39)
-
-Kedua field membaca kolom `JMLLAKI` (copy-paste error):
-
-```php
-'terisi' => (int) $r['JMLLAKI'],   // baris 38
-'kosong' => (int) $r['JMLLAKI'],   // baris 39 — SALAH, harusnya kolom lain
-```
-
-**Solusi:** Cek nama kolom yang benar:
-
-```sql
-SHOW COLUMNS FROM informasi.tempat_tidur_kemkes;
-```
-
-Lalu perbaiki mapping di `api.php`.
 
 ### Error: "Gagal terhubung ke database"
 

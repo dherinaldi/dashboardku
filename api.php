@@ -18,9 +18,11 @@ if (!$koneksi) {
 }
 
 // Query langsung - sesuaikan nama tabel & kolom dengan database eksisting.
-// Alias (AS ...) jangan diubah karena dipakai oleh assets/app.js
-$sql = "select * 
-from informasi.tempat_tidur_kemkes ttk ";
+// TTLAKI/TTPEREMPUAN = kapasitas (total) TT; JMLLAKI/JMLPEREMPUAN = jumlah terisi.
+$sql = "SELECT ttk.KAMAR, ttk.KELAS, ttk.JENISKAMAR,
+               ttk.TTLAKI, ttk.TTPEREMPUAN, ttk.JMLLAKI, ttk.JMLPEREMPUAN,
+               ttk.LASTUPDATED
+        FROM informasi.tempat_tidur_kemkes ttk";
 
 $query = mysqli_query($koneksi, $sql);
 if (!$query) {
@@ -32,11 +34,14 @@ if (!$query) {
 
 $rows = [];
 while ($r = mysqli_fetch_assoc($query)) {
+    $terisi = (int) $r['JMLLAKI'] + (int) $r['JMLPEREMPUAN'];   // jumlah terisi L + P
+    $total  = (int) $r['TTLAKI'] + (int) $r['TTPEREMPUAN'];     // kapasitas L + P
+    $kosong = max(0, $total - $terisi);                        // sisa tempat tidur
     $rows[] = [
         'nama_ruang' => $r['KAMAR'],
         'kelas'      => $r['KELAS'],
-        'terisi'     => (int) $r['JMLLAKI'],
-        'kosong'     => (int) $r['JMLLAKI'],
+        'terisi'     => $terisi,
+        'kosong'     => $kosong,
     ];
 }
 mysqli_free_result($query);
