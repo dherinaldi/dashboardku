@@ -1,6 +1,6 @@
 // Tampilan data tempat tidur (read-only) - versi jQuery
 $(function () {
-    const REFRESH_MS = 30000; // auto refresh tiap 30 detik
+    const REFRESH_MS = 3600000; // auto refresh tiap 1 jam
 
     const $cardView = $('#cardView');
     const $tableView = $('#tableView');
@@ -15,7 +15,7 @@ $(function () {
 
     // Status warna berdasarkan persentase keterisian
     function status(pct) {
-        if (pct >= 80) return { cls: 'danger', hex: '#ef4444', text: 'Penuh / Kritis' };
+        if (pct >= 80) return { cls: 'danger', hex: '#ef4444', text: 'Penuh' };
         if (pct >= 50) return { cls: 'warning', hex: '#f59e0b', text: 'Hampir Penuh' };
         return { cls: 'success', hex: '#10b981', text: 'Tersedia' };
     }

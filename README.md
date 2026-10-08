@@ -29,7 +29,7 @@ Dashboard read-only berbasis **PHP + jQuery + MySQL** (Bootstrap 5) untuk monito
 - Filter berdasarkan **kelas** dan **pencarian** nama ruang
 - Donut chart per ruangan (CSS `conic-gradient`, tanpa library chart)
 - Indikator warna: 🟢 Tersedia (<50%), 🟡 Hampir Penuh (50–79%), 🔴 Penuh/Kritis (≥80%)
-- Auto-refresh setiap 30 detik
+- Auto-refresh setiap 1 jam
 
 ### 2. Jadwal Dokter HFIS (`index.php`, bagian bawah)
 - Menampilkan jadwal dokter **hari ini** otomatis berdasarkan `date('N')`
@@ -349,7 +349,7 @@ Invoke-WebRequest -Uri 'https://cdn.jsdelivr.net/npm/bootstrap@5.x.x/dist/js/boo
 
 | Halaman | Data | Interval |
 |---|---|---|
-| `index.php` | Tempat tidur | 30 detik |
+| `index.php` | Tempat tidur | 1 jam |
 | `index.php` | Jadwal dokter | 5 menit |
 | `index.php` | Status praktik dokter | 1 menit |
 | `satusehat.php` | Data pengiriman | 1 menit |
