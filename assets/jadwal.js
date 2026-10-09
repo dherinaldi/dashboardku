@@ -44,9 +44,7 @@ $(function () {
                             <div class="small text-muted mb-2"><i class="bi bi-hospital"></i> ${esc(j.nm_poli)} (${j.kd_poli}) ${sub}</div>
                             <div class="jam-badge"><i class="bi bi-clock"></i> ${esc(jam)}</div>
                             <div class="d-flex gap-2 mt-2 small">
-                                <span class="quota">Kapasitas <b>${j.kapasitas}</b></span>
-                                <span class="quota">JKN <b>${j.kuota_jkn}</b></span>
-                                <span class="quota">Non JKN <b>${j.kuota_non_jkn}</b></span>
+                                <span class="quota">Kapasitas <b>${j.kapasitas}</b></span>                                
                             </div>
                         </div>
                     </div>
