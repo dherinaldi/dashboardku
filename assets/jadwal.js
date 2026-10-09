@@ -41,7 +41,7 @@ $(function () {
                                 <div class="doctor-name text-truncate" title="${esc(j.nm_dokter)}">${esc(j.nm_dokter)}</div>
                                 <span class="badge rounded-pill text-bg-${st.cls} align-self-start">${st.text}</span>
                             </div>
-                            <div class="small text-muted mb-2"><i class="bi bi-hospital"></i> Poli ${esc(j.kd_poli)}${sub}</div>
+                            <div class="small text-muted mb-2"><i class="bi bi-hospital"></i> ${esc(j.nm_poli)} (${j.kd_poli}) ${sub}</div>
                             <div class="jam-badge"><i class="bi bi-clock"></i> ${esc(jam)}</div>
                             <div class="d-flex gap-2 mt-2 small">
                                 <span class="quota">Kapasitas <b>${j.kapasitas}</b></span>
