@@ -22,7 +22,7 @@ if (!$koneksi) {
 $sql = "SELECT ttk.KAMAR, ttk.KELAS, ttk.JENISKAMAR,
                ttk.TTLAKI, ttk.TTPEREMPUAN, ttk.JMLLAKI, ttk.JMLPEREMPUAN,
                ttk.LASTUPDATED
-        FROM informasi.tempat_tidur_kemkes ttk";
+        FROM informasi.tempat_tidur_kemkes ttk ORDER BY ttk.IDKELAS DESC,ttk.KAMAR ASC";
 
 $query = mysqli_query($koneksi, $sql);
 if (!$query) {
